@@ -230,7 +230,7 @@ router.post('/',verifyToken,async(req,res)=>{
         let learner = req.body
         let checklearner= req.body.learnerid
         console.log(checklearner)
-        let existingLearner =  LearnerData.findOne({ learnerid: checklearner});
+        let existingLearner = await LearnerData.findOne({ learnerid: checklearner});
         if (existingLearner) {
           // If learner already exists, return an alert message
           console.log("checked learner")
@@ -250,7 +250,7 @@ router.post('/',verifyToken,async(req,res)=>{
 
 
 
-router.put('/:id',async(req,res)=>{
+router.put('/:id',verifyToken,async(req,res)=>{
   
   try {
     let id = req.params.id;
