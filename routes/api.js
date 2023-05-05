@@ -24,40 +24,6 @@ function verifyToken(req,res,next){
 }
 const saltRounds = 10; // Number of salt rounds to use for the hash
 
-// router.post('/auth', async (req, res) => {
-//   const loginemail = req.body.email;
-//   const loginpassword = req.body.password;
-//   const user = await userData.findOne({ email: loginemail }).exec();
-//   if (loginemail == 'admin' && loginpassword == '1234') {
-//             console.log("admin login success");
-//             res.send({ status: true, data: loginemail });
-//         }
-
-//    else if (user) {
-//     bcrypt.compare(loginpassword, user.password, (err, result) => {
-//       if (err) {
-//         console.error(err);
-//         res.status(500).send('Error comparing passwords');
-//       } else if (result) {
-//         console.log(user.role);
-//         console.log('user login success');
-//         res.send({ status: true, data: user.role });
-//       } else {
-//         res.status(401).json({
-//           status: false,
-//           message: 'Authentication failed. Invalid password.',
-//         });
-//       }
-//     });
-//   } else {
-//     res.status(401).json({
-//       status: false,
-//       message: 'Authentication failed. User not found.',
-//     });
-//   }
-  
-  
-// });
 
 
 let token = '';
@@ -140,29 +106,41 @@ router.get('/staff/:id',async(req,res)=>{
 })
 
 // add new staff
-router.post('/staff',verifyToken, async(req,res)=>{
-    try {
-        // store the front end entered details in server variable
-        console.log(req.body);
-        bcrypt.hash(req.body.password, 10, function(err, hash) {
-            // store hash in the database
-            let staffnew ={
-                name: req.body.name,
-                email: req.body.email,
-                password: hash,
-                role : req.body.role
-            }
-            let token=req.headers.authorization
-              console.log('token from frontend',token)
-            let staff = new staffInfo(staffnew);
-            let saveStaff = staff.save();
-            res.send(saveStaff);                              
-        });                   
+router.post('/staff', verifyToken, async (req, res) => {
+  try {
+    console.log(req.body);
+    const checkuser = req.body.email;
+    console.log(checkuser);
+    const userexist = await userData.findOne({ email: checkuser }).exec();
+    console.log(userexist);
+    if (userexist !== null) {
+      console.log('User already exists');
+      return res.status(400).json({ message: 'User already exists' });
+    } else {
+      bcrypt.hash(req.body.password, 10, function (err, hash) {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: 'Internal server error' });
+        }
+        const staffnew = {
+          name: req.body.name,
+          email: req.body.email,
+          password: hash,
+          role: req.body.role,
+        };
+        const token = req.headers.authorization;
+        console.log('Token from frontend', token);
+        const staff = new staffInfo(staffnew);
+        const saveStaff = staff.save();
+        return res.send(saveStaff);
+      });
     }
-    catch(error) {
-        console.log(">>",error);
-    }
-})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 // update staff detail
 router.put('/staff/:id', async(req, res) => {
