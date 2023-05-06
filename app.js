@@ -17,7 +17,7 @@ const api = require('./routes/api')
 app.use('/api',api)
 
 const learner = require('./routes/learner')
-app.use('/learner',learner)
+app.use('/api',learner)
 
 
 app.listen(2341,()=>{
